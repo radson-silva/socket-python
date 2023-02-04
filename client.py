@@ -32,7 +32,7 @@ def client() -> None:
 
         # Lendo a entrada que o cliente digita enquanto ele não solicitar a saida
         while True:
-            msg = input()
+            msg =  input("Informe a resposta no formato <questão>;<alternativa>;<resposta>: ")
             if msg == 'sair':
                 break
             socket_instance.send(msg.encode())

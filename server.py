@@ -1,38 +1,36 @@
 import socket, threading
 connections = []
 
+# Define o gabarito de questões no servidor
+gabarito = {
+    1: "VVVV",
+    2: "FVFV",
+    3: "VFVV",
+    4: "VVFV",
+    5: "FVVF"
+}
+
+
 def handle_user_connection(connection: socket.socket, address: str) -> None:
     #Pega a conexão dos usuarios e envia para os conectados
         
     while True:
         try:
             # Captura o input da mensagem
-            msg = connection.recv(1024)
-
-            if msg:
-                # Log da mensagem digitada pelo cliente
-                print(f'{address[0]}:{address[1]} - {msg.decode()}')
-                #Disparo da mensagem recebida pelo servidor para demais cliente
-                '''
-                newTxt = msg.decode().split(";")
-                question = newTxt[0]
-                alternative = newTxt[1]
-                response = newTxt[2]
-                print("===============")
-                print(question)
-                print(response)
-                forms = [
-                    {'V','F','F','F','V'},
-                    {'V','F','V','F','V'},
-                    {'F','F','F','V','V'}
-                ]
-
-                count = 0
-                for i, res in response:
-                    if res == forms[question][i]:
-                        count +=1
-                '''
-                msg_to_send = f'From {address[0]}:{address[1]} - {msg.decode()}'
+            dados = connection.recv(1024)
+            if dados:
+                print(f"=======================")
+                print(f"{dados}")
+                dados = dados.decode()
+                questao, alternativa, resposta = dados.split(';')
+                questao = int(questao)
+                alternativa = int(alternativa)
+                print(f"{questao}")
+                print(f"{resposta}")
+                num_acertos = sum(a == b for a, b in zip(resposta, gabarito[questao]))
+                num_erros = alternativa - num_acertos
+                print(f"{questao};Acertos [{num_acertos}]; Erros[{num_erros}]")
+                msg_to_send = (f"{questao};Acertos [{num_acertos}]; Erros[{num_erros}]")
                 broadcast(msg_to_send, connection)
             else:
                 remove_connection(connection)
@@ -43,15 +41,12 @@ def handle_user_connection(connection: socket.socket, address: str) -> None:
             remove_connection(connection)
             break
 
-
 def broadcast(message: str, connection: socket.socket) -> None:
     #Disparo brodcast, para todos os usuarios
-    
     for client_conn in connections:
-        if client_conn != connection:
+        if client_conn == connection:
             try:
                 client_conn.send(message.encode())
-
             except Exception as e:
                 print('Erro ao enviar a mensagem: {e}')
                 remove_connection(client_conn)

@@ -1,63 +1,46 @@
 import socket, threading
-
+#///////////////////////////////////////////////////////////
+#///////////////////////////////////////////////////////////
 def handle_messages(connection: socket.socket):
-    '''
-        Receive messages sent by the server and display them to user
-    '''
-
+    #Onde vou receber as mensagens enviadas pelo servidor
+    #E apresento elas no terminal do usuario
     while True:
         try:
             msg = connection.recv(1024)
-
-            # If there is no message, there is a chance that connection has closed
-            # so the connection will be closed and an error will be displayed.
-            # If not, it will try to decode message in order to show to user.
             if msg:
                 print(msg.decode())
             else:
                 connection.close()
                 break
-
         except Exception as e:
-            print(f'Error handling message from server: {e}')
+            print(f'Error ao manipular mensagem no servidor: {e}')
             connection.close()
             break
-
+#///////////////////////////////////////////////////////////
+#///////////////////////////////////////////////////////////
 def client() -> None:
-    '''
-        Main process that start client connection to the server 
-        and handle it's input messages
-    '''
-
+    #Processo de iniciar um cliente
     SERVER_ADDRESS = '127.0.0.1'
     SERVER_PORT = 12000
 
     try:
-        # Instantiate socket and start connection with server
         socket_instance = socket.socket()
         socket_instance.connect((SERVER_ADDRESS, SERVER_PORT))
-        # Create a thread in order to handle messages sent by server
+        # Criando uma thread para enviar mensagens ao servidor
         threading.Thread(target=handle_messages, args=[socket_instance]).start()
+        print('Conexão feita com sucesso!!')
 
-        print('Connected to chat!')
-
-        # Read user's input until it quit from chat and close connection
+        # Lendo a entrada que o cliente digita enquanto ele não solicitar a saida
         while True:
-            msg = input()
-
-            if msg == 'quit':
+            msg = input("Informe o nome do arquivo a ser baixado: ")
+            if msg == 'sair':
                 break
-
-            # Parse message to utf-8
             socket_instance.send(msg.encode())
-
-        # Close connection with the server
         socket_instance.close()
 
     except Exception as e:
-        print(f'Error connecting to server socket {e}')
+        print(f'Erro ao se conectar com servidor {e}')
         socket_instance.close()
-
 
 if __name__ == "__main__":
     client()
